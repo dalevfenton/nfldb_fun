@@ -110,18 +110,16 @@ with open(csv_name, 'wb') as csvfile:
       for team_id, team in teams.iteritems():
         row = []
         for position in positions:
-          # print position + ':'
-          row.append(ranks[position][count][0])
-          row.append(ranks[position][count][1])
-          if(ranks[position][count][0] == 'LA'):
-            for week in PLAYOFFS:
-              row.append('ERROR')
-          else:
+            # print position + ':'
+            row.append(ranks[position][count][0])
+            row.append(ranks[position][count][1])
             y = nfldb.Query(db)
             y.game( season_year=db_season_year, season_type=db_season_phase, week=PLAYOFFS, team=ranks[position][count][0] )
+            y.sort([('week', 'asc')])
             # print ranks[position][count][0] + ':'
             game_count = 0
             for game in y.as_games():
+            #   print game
               if( game.week != PLAYOFFS[0] + game_count):
                 row.append('BYE')
                 game_count += 1
@@ -138,6 +136,6 @@ with open(csv_name, 'wb') as csvfile:
                 players += ' ' + pp.player.full_name
               row.append(opp + ' - ' + players)
               game_count += 1
-          row.append('  ')
+            row.append('  ')
         count += 1
         csvsaver.writerow(row)
