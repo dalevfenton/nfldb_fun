@@ -1,14 +1,15 @@
 import nfldb
 import csv
-import os
-from pprint import pprint
+# import os
+# from pprint import pprint
 
 from scoring import off_scoring_fields
 from scoring import def_scoring_fields
 from scoring import kicker_scoring_fields
-
-#get current directory
-cwd = os.getcwd()
+from settings import PLAYOFFS
+from settings import CSV_BASE
+from settings import positions
+from settings import positions_sort
 
 #get a DB connection
 db = nfldb.connect()
@@ -16,11 +17,6 @@ db = nfldb.connect()
 db_season_phase = nfldb.current(db)[0] #can be preseacon, regular, or postseason
 db_season_year = nfldb.current(db)[1] #current season year
 db_current_week = nfldb.current(db)[2] #current week of this season phase
-
-#set the weeks we'd like to see reported
-DALE_PLAYOFFS = range(12, 16)
-ALL_REG_SEASON_LEFT = range(db_current_week+1, 18)
-PLAYOFFS = DALE_PLAYOFFS
 
 #search the teams table and return the teams in the DB
 #the DB includes an Unknown, old Jacksonville, and St Louis Rams teams we want
@@ -33,17 +29,10 @@ with nfldb.Tx(db) as cur:
 
 teams = {}
 
-#positions_sort is used later to figure out the best position player out of a group
-positions_sort = {
-    'QB': 'passing_yds',
-    'RB': 'rushing_yds',
-    'WR': 'receiving_yds',
-    'TE': 'receiving_yds',
-    'K': 'kicking_fgm'
-}
+
 #take the RealDictRows returned from the DB query and convert them to dictionaries
 #with extra attributes for each player category we can work with
-positions = ['QB', 'RB', 'WR', 'TE', 'K']
+
 for raw_team in raw_teams:
     team = dict(raw_team)
     for position in positions:
@@ -178,7 +167,7 @@ for team_id, team in teams.iteritems():
     ranks_output.append(row)
 
 #now that we have our rankings let's save them out to a csv so we can examine
-csv_name = cwd + '\\ranks.csv'
+csv_name = CSV_BASE + 'team-ranks' + str(db_current_week) + '.csv'
 with open(csv_name, 'wb') as csvfile:
     csvsaver = csv.writer(csvfile, dialect=csv.excel)
     header = []
